@@ -87,9 +87,16 @@ def weekends_time(station,direction):
         time_calculate += timedelta(minutes=9,seconds=30)
 
         check_status_train(time_calculate)
-        
     print(f"ขบวนสุดท้ายออกเวลา: {time_calculate.strftime(('%H:%M:%S'))}")
-    print(f"ขบวนถัดไปมา{next_train[0]}")
+    if next_train == []:
+        print("ไม่มีขบวนถัดไป")
+    else:
+        print(f"ขบวนถัดไปมา{next_train[0]}")
+
+def check_status_train(time_calculate):
+    # check next train alive
+    if real_time_now < time_calculate:
+        next_train.append(time_calculate.strftime(('%H:%M:%S')))
 
 def station_ask(station,direction):
     #Check station
@@ -100,8 +107,5 @@ def station_ask(station,direction):
     else:
         return(weekends_time(station,direction))
     
-def check_status_train(time_calculate):
-    if real_time_now < time_calculate:
-        next_train.append(time_calculate.strftime(('%H:%M:%S')))
 
 station_ask(input("where are you now??"),input("which directions?"))
