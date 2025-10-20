@@ -69,6 +69,7 @@ stations = {
 # แสดงเวลาปัจจุบัน
 real_time_now = datetime.now()
 today = datetime.now().date()  # เอาวันปัจจุบันมาใช้ใน combine()
+next_train = []
 def weekends_time(station,direction):
      
     ### คำนวณเวลาในช่วงที่รถผ่าน
@@ -80,14 +81,12 @@ def weekends_time(station,direction):
         new_time_start = datetime.combine(today,stations[f"pp{station}"]['down']['start']) 
         new_time_end = datetime.combine(today,stations[f"pp{station}"]['down']['end'])
         time_calculate = new_time_start + timedelta(minutes=18)
-    next_train = []
     print(f"ตารางเวลาของสถานี:pp{station}")
     while time_calculate < new_time_end:
         print(time_calculate.strftime(('%H:%M:%S')))
         time_calculate += timedelta(minutes=9,seconds=30)
 
-        if real_time_now < time_calculate:
-            next_train.append(time_calculate.strftime(('%H:%M:%S')))
+        check_status_train(time_calculate)
         
     print(f"ขบวนสุดท้ายออกเวลา: {time_calculate.strftime(('%H:%M:%S'))}")
     print(f"ขบวนถัดไปมา{next_train[0]}")
@@ -100,5 +99,9 @@ def station_ask(station,direction):
         print("This is terminal station")
     else:
         return(weekends_time(station,direction))
+    
+def check_status_train(time_calculate):
+    if real_time_now < time_calculate:
+        next_train.append(time_calculate.strftime(('%H:%M:%S')))
 
 station_ask(input("where are you now??"),input("which directions?"))
