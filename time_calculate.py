@@ -70,9 +70,10 @@ stations = {
 real_time_now = datetime.now()
 today = datetime.now().date()  # เอาวันปัจจุบันมาใช้ใน combine()
 next_train = []
+
 def weekends_time(station,direction):
      
-    ### คำนวณเวลาในช่วงที่รถผ่าน
+    ### คำนวณเวลาสำหรับวันหยุด เสา-อาทิตย์
     if direction =="up":
         new_time_start = datetime.combine(today,stations[f"pp{station}"]['up']['start']) 
         new_time_end = datetime.combine(today,stations[f"pp{station}"]['up']['end'])
@@ -93,6 +94,46 @@ def weekends_time(station,direction):
     else:
         print(f"ขบวนถัดไปมา{next_train[0]}")
 
+def weekdays_time(station,direction):
+    #คำนวณเวลาสำหรับวันทำงาน จันทร์ - ศุกร์
+    time_in_5am_to_6am = datetime.combine(today,time(6,30,0))
+    time_in_6am_to_8am = datetime.combine(today,time(8,30,0))
+    time_in_8am_to_9am = datetime.combine(today,time(6,30,0))
+    time_in_9am_to_5pm = datetime.combine(today,time(17,0,0))
+    time_in_5pm_to_8pm = datetime.combine(today,time(20,0,0))
+    time_in_8pm_to_9pm = datetime.combine(today,time(21,0,0))
+    time_in_9pm_to_0am = datetime.combine(today,time(23,59,59))
+    if direction =="up":
+        new_time_start = datetime.combine(today,stations[f"pp{station}"]['up']['start']) 
+        new_time_end = datetime.combine(today,stations[f"pp{station}"]['up']['end'])
+    elif direction =="down":
+        new_time_start = datetime.combine(today,stations[f"pp{station}"]['down']['start']) 
+        new_time_end = datetime.combine(today,stations[f"pp{station}"]['down']['end'])
+    print(f"ตารางเวลาของสถานี:pp{station}")
+    while new_time_start < new_time_end:
+        print(new_time_start.strftime(('%H:%M:%S')))
+        if  new_time_start < time_in_5am_to_6am:
+            new_time_start += timedelta(minutes=7,seconds=12)
+        elif new_time_start < time_in_6am_to_8am:
+            new_time_start += timedelta(minutes=4,seconds=50)
+        elif new_time_start < time_in_8am_to_9am:
+            new_time_start += timedelta(minutes=6, seconds=25)
+        elif  new_time_start < time_in_9am_to_5pm:
+            new_time_start += timedelta(minutes=8,seconds=30)
+        elif  new_time_start <  time_in_5pm_to_8pm:
+            new_time_start += timedelta(minutes=4,seconds=50)
+        elif new_time_start < time_in_8pm_to_9pm:
+            new_time_start += timedelta(minutes=6, seconds=25)
+        elif new_time_start < time_in_9pm_to_0am:
+            new_time_start += timedelta(minutes=9, seconds=30)
+
+        check_status_train(new_time_start)
+    print(f"ขบวนสุดท้ายออกเวลา: {new_time_start.strftime(('%H:%M:%S'))}")
+    if next_train == []:
+        print("ไม่มีขบวนถัดไป")
+    else:
+        print(f"ขบวนถัดไปมา{next_train[0]}")
+
 def check_status_train(time_calculate):
     # check next train alive
     if real_time_now < time_calculate:
@@ -104,6 +145,8 @@ def station_ask(station,direction):
         print("This is terminal station")
     elif station == "1" and direction =='down':
         print("This is terminal station")
+    elif real_time_now.weekday() < 5:
+        return(weekdays_time(station,direction))
     else:
         return(weekends_time(station,direction))
     
