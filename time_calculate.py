@@ -82,13 +82,15 @@ def weekends_time(station,direction):
         new_time_start = datetime.combine(today,stations[f"pp{station}"]['down']['start']) 
         new_time_end = datetime.combine(today,stations[f"pp{station}"]['down']['end'])
         time_calculate = new_time_start + timedelta(minutes=18)
+    if new_time_end < new_time_start:
+        new_time_end += timedelta(days=1)
     print(f"ตารางเวลาของสถานี:pp{station}")
     while time_calculate < new_time_end:
         print(time_calculate.strftime(('%H:%M:%S')))
         time_calculate += timedelta(minutes=9,seconds=30)
 
         check_status_train(time_calculate)
-    print(f"ขบวนสุดท้ายออกเวลา: {time_calculate.strftime(('%H:%M:%S'))}")
+    print(f"ขบวนสุดท้ายออกเวลา: {new_time_end.strftime(('%H:%M:%S'))}")
     if next_train == []:
         print("ไม่มีขบวนถัดไป")
     else:
@@ -96,39 +98,42 @@ def weekends_time(station,direction):
 
 def weekdays_time(station,direction):
     #คำนวณเวลาสำหรับวันทำงาน จันทร์ - ศุกร์
-    time_in_5am_to_6am = datetime.combine(today,time(6,30,0))
-    time_in_6am_to_8am = datetime.combine(today,time(8,30,0))
-    time_in_8am_to_9am = datetime.combine(today,time(6,30,0))
-    time_in_9am_to_5pm = datetime.combine(today,time(17,0,0))
-    time_in_5pm_to_8pm = datetime.combine(today,time(20,0,0))
-    time_in_8pm_to_9pm = datetime.combine(today,time(21,0,0))
-    time_in_9pm_to_0am = datetime.combine(today,time(23,59,59))
+    time_in_5am_to_6am = time(6,30,0)
+    time_in_6am_to_8am = (time(8,30,0))
+    time_in_8am_to_9am = (time(6,30,0))
+    time_in_9am_to_5pm = (time(17,0,0))
+    time_in_5pm_to_8pm = (time(20,0,0))
+    time_in_8pm_to_9pm = (time(21,0,0))
+    time_in_9pm_to_0am = (time(23,59,59))
     if direction =="up":
         new_time_start = datetime.combine(today,stations[f"pp{station}"]['up']['start']) 
         new_time_end = datetime.combine(today,stations[f"pp{station}"]['up']['end'])
     elif direction =="down":
         new_time_start = datetime.combine(today,stations[f"pp{station}"]['down']['start']) 
         new_time_end = datetime.combine(today,stations[f"pp{station}"]['down']['end'])
+    if new_time_end < new_time_start:
+        new_time_end += timedelta(days=1)
     print(f"ตารางเวลาของสถานี:pp{station}")
     while new_time_start < new_time_end:
+
         print(new_time_start.strftime(('%H:%M:%S')))
-        if  new_time_start < time_in_5am_to_6am:
+        if  new_time_start.time() < time_in_5am_to_6am:
             new_time_start += timedelta(minutes=7,seconds=12)
-        elif new_time_start < time_in_6am_to_8am:
+        elif new_time_start.time() < time_in_6am_to_8am:
             new_time_start += timedelta(minutes=4,seconds=50)
-        elif new_time_start < time_in_8am_to_9am:
+        elif new_time_start.time() < time_in_8am_to_9am:
             new_time_start += timedelta(minutes=6, seconds=25)
-        elif  new_time_start < time_in_9am_to_5pm:
+        elif  new_time_start.time() < time_in_9am_to_5pm:
             new_time_start += timedelta(minutes=8,seconds=30)
-        elif  new_time_start <  time_in_5pm_to_8pm:
+        elif  new_time_start.time() <  time_in_5pm_to_8pm:
             new_time_start += timedelta(minutes=4,seconds=50)
-        elif new_time_start < time_in_8pm_to_9pm:
+        elif new_time_start.time() < time_in_8pm_to_9pm:
             new_time_start += timedelta(minutes=6, seconds=25)
-        elif new_time_start < time_in_9pm_to_0am:
+        elif new_time_start.time() < time_in_9pm_to_0am:
             new_time_start += timedelta(minutes=9, seconds=30)
 
         check_status_train(new_time_start)
-    print(f"ขบวนสุดท้ายออกเวลา: {new_time_start.strftime(('%H:%M:%S'))}")
+    print(f"ขบวนสุดท้ายออกเวลา: {new_time_end.strftime(('%H:%M:%S'))}")
     if next_train == []:
         print("ไม่มีขบวนถัดไป")
     else:
