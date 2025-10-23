@@ -78,21 +78,20 @@ def weekends_time(station,direction):
      
     ### คำนวณเวลาสำหรับวันหยุด เสา-อาทิตย์
     if direction =="up":
-        time_start = datetime.combine(today,stations[f"pp{station}"]['up']['start']) 
-        time_end = datetime.combine(today,stations[f"pp{station}"]['up']['end'])
-        
+        time_start = (stations[f"pp{station}"]['up']['start'])
+
     elif direction =="down":
-        time_start = datetime.combine(today,stations[f"pp{station}"]['down']['start']) 
-        time_end = datetime.combine(today,stations[f"pp{station}"]['down']['end'])
+        time_start = (stations[f"pp{station}"]['down']['start'])
 
     print(f"ตารางเวลาของสถานี:pp{station}")
     for t in time_first_station:
-        t += time_start
-        print(t.strftime(('%H:%M:%S')))
-        t += timedelta(minutes=9,seconds=30)
-
-        check_status_train(t)
-    print(f"ขบวนสุดท้ายออกเวลา: {t.strftime(('%H:%M:%S'))}")
+        t_time = datetime.strptime(t, "%H:%M:%S").time()
+        t_datetime = datetime.combine(today, t_time)
+        # แล้วบวกกับ new_time_start (ต้องเป็น timedelta)
+        new_time = t_datetime + time_start  
+        print(new_time.strftime(('%H:%M:%S')))
+        check_status_train(new_time)
+    print(f"ขบวนสุดท้ายออกเวลา: {new_time.strftime(('%H:%M:%S'))}")
     if next_train == []:
         print("ไม่มีขบวนถัดไป")
     else:
@@ -102,17 +101,15 @@ def weekdays_time(station,direction):
     #คำนวณเวลาสำหรับวันทำงาน จันทร์ - ศุกร์
     if direction =="up":
         new_time_start = (stations[f"pp{station}"]['up']['start']) 
-        new_time_end = datetime.combine(today,stations[f"pp{station}"]['up']['end'])
     elif direction =="down":
         new_time_start = (stations[f"pp{station}"]['down']['start']) 
-        new_time_end = datetime.combine(today,stations[f"pp{station}"]['down']['end'])
 
     print(f"ตารางเวลาของสถานี:pp{station}")
     for t in time_first_station:
         t_time = datetime.strptime(t, "%H:%M:%S").time()
         t_datetime = datetime.combine(today, t_time)
         # แล้วบวกกับ new_time_start (ต้องเป็น timedelta)
-        new_time = t_datetime + new_time_start  # ถ้า new_time_start เป็น timedelta
+        new_time = t_datetime + new_time_start  
         print(new_time.strftime(('%H:%M:%S')))
 
         check_status_train(new_time)
@@ -198,6 +195,5 @@ def first_station_weekdays_time(direction):
 
        
 station_ask()
-
 
 
