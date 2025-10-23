@@ -74,42 +74,20 @@ real_time_now = datetime.now()
 today = datetime.now().date()  # เอาวันปัจจุบันมาใช้ใน combine()
 next_train = []
 time_first_station = []
-def weekends_time(station,direction):
-     
-    ### คำนวณเวลาสำหรับวันหยุด เสา-อาทิตย์
+
+def calculate_time(station: int,direction: str):
     if direction =="up":
         time_start = (stations[f"pp{station}"]['up']['start'])
 
     elif direction =="down":
         time_start = (stations[f"pp{station}"]['down']['start'])
 
-    print(f"ตารางเวลาของสถานี:pp{station}")
+        print(f"ตารางเวลาของสถานี:pp{station}")
     for t in time_first_station:
         t_time = datetime.strptime(t, "%H:%M:%S").time()
         t_datetime = datetime.combine(today, t_time)
         # แล้วบวกกับ new_time_start (ต้องเป็น timedelta)
         new_time = t_datetime + time_start  
-        print(new_time.strftime(('%H:%M:%S')))
-        check_status_train(new_time)
-    print(f"ขบวนสุดท้ายออกเวลา: {new_time.strftime(('%H:%M:%S'))}")
-    if next_train == []:
-        print("ไม่มีขบวนถัดไป")
-    else:
-        print(f"ขบวนถัดไปมา{next_train[0]}")
-
-def weekdays_time(station,direction):
-    #คำนวณเวลาสำหรับวันทำงาน จันทร์ - ศุกร์
-    if direction =="up":
-        new_time_start = (stations[f"pp{station}"]['up']['start']) 
-    elif direction =="down":
-        new_time_start = (stations[f"pp{station}"]['down']['start']) 
-
-    print(f"ตารางเวลาของสถานี:pp{station}")
-    for t in time_first_station:
-        t_time = datetime.strptime(t, "%H:%M:%S").time()
-        t_datetime = datetime.combine(today, t_time)
-        # แล้วบวกกับ new_time_start (ต้องเป็น timedelta)
-        new_time = t_datetime + new_time_start  
         print(new_time.strftime(('%H:%M:%S')))
 
         check_status_train(new_time)
@@ -128,22 +106,29 @@ def station_ask():
     #Check station
     station = input("Where are you live now?")
     direction = input("Which directions you want to go?")
+    if station not in [str(i) for i in range(1, 17)]:
+        print("Invalid station number")
+        return
+    if direction not in ["up", "down"]:
+        print("Invalid direction")
+        return
+
     if (station == "16" and direction =='up') or (station == "1" and direction =='down'):
         print("This is terminal station")
                 # คืนค่า list จากฟังก์ชันเวลา (วันธรรมดาหรือวันหยุด)
     elif (station == "16" and direction =='down') or (station == "1" and direction =='up'):
             # คืนค่า list จากฟังก์ชันเวลา (วันธรรมดาหรือวันหยุด)
         if real_time_now.weekday() < 5:
-            return first_station_weekdays_time(direction),print(time_first_station)
+            return first_station_calculate_time(direction, mode = "weekday"),print(time_first_station)
         else:
-            return first_station_weekend_time(direction), print(time_first_station)
+            return first_station_calculate_time(direction, mode = "weekend"), print(time_first_station)
     elif real_time_now.weekday() < 5:
-        return(first_station_weekdays_time(direction),weekdays_time(station,direction))
+        return(first_station_calculate_time(direction,mode = "weekday"),calculate_time(station,direction))
     else:
-        return(first_station_weekend_time(direction),weekends_time(station,direction))
+        return(first_station_calculate_time(direction, mode = "weekend"),calculate_time(station,direction))
     
     
-def first_station_weekend_time(direction):
+def first_station_calculate_time(direction,mode = "weekday"):
     ### คำนวณเวลาสำหรับสถานีแรกวันหยุด เสา-อาทิตย์
     if direction =="up":
         new_time_start = datetime.combine(today,stations["pp1"]['up']['start']) 
@@ -153,14 +138,18 @@ def first_station_weekend_time(direction):
         new_time_start = datetime.combine(today,stations["pp16"]['down']['start']) 
         new_time_end = datetime.combine(today,stations["pp16"]['down']['end'])
         time_calculate = new_time_start + timedelta(minutes=18)
-
-    while time_calculate < new_time_end:
+    if mode == "weekend" :
         time_first_station.append(time_calculate.strftime(('%H:%M:%S')))
-        time_calculate += timedelta(minutes=9,seconds=30)
-    time_first_station.append(time_calculate.strftime(('%H:%M:%S')))
+        while time_calculate < new_time_end:
+            time_first_station.append(time_calculate.strftime(('%H:%M:%S')))
+            time_calculate += timedelta(minutes=9,seconds=30)
+        time_first_station.append(time_calculate.strftime(('%H:%M:%S')))
+    elif mode == "weekday":
+        time_first_station.append(new_time_start.strftime(('%H:%M:%S')))#add first time
+        get_interval_by_time(new_time_start,new_time_end)
 
-def first_station_weekdays_time(direction):
-    #คำนวณเวลาสำหรับวันทำงาน จันทร์ - ศุกร์
+def get_interval_by_time(new_time_start,new_time_end):
+        #คำนวณเวลาสำหรับวันทำงาน จันทร์ - ศุกร์
     time_in_5am_to_6am = time(6,30,0)
     time_in_6am_to_8am = (time(8,30,0))
     time_in_8am_to_9am = (time(6,30,0))
@@ -168,14 +157,7 @@ def first_station_weekdays_time(direction):
     time_in_5pm_to_8pm = (time(20,0,0))
     time_in_8pm_to_9pm = (time(21,0,0))
     time_in_9pm_to_0am = (time(23,59,59))
-    if direction =="up":
-        new_time_start = datetime.combine(today,stations["pp1"]['up']['start']) 
-        new_time_end = datetime.combine(today,stations["pp1"]['up']['end'])
-    elif direction =="down":
-        new_time_start = datetime.combine(today,stations["pp16"]['down']['start']) 
-        new_time_end = datetime.combine(today,stations["pp16"]['down']['end'])
 
-    time_first_station.append(new_time_start.strftime(('%H:%M:%S')))#add first time
     while new_time_start < new_time_end:
         if  new_time_start.time() < time_in_5am_to_6am:
             new_time_start += timedelta(minutes=7,seconds=12)
@@ -192,8 +174,4 @@ def first_station_weekdays_time(direction):
         elif new_time_start.time() < time_in_9pm_to_0am:
             new_time_start += timedelta(minutes=9, seconds=30)
         time_first_station.append(new_time_start.strftime(('%H:%M:%S')))
-
-       
 station_ask()
-
-
